@@ -141,6 +141,8 @@
         for (let i = 0; i < time.length; i++) {
             let month1 = time[i].innerHTML.slice(0, 7)
             let month2 = year + "-" + ("0" + (month))
+            
+
             let days = time[i].innerHTML.slice(-2) - 1
             if (month1 == month2)
                 day[days].insertAdjacentHTML("beforeend", "<br>" + "<button onclick='btnClick(" + [i] + ")'  id='" + [i] + "' class='clBtn'>" + name[i].innerText + "</button>")

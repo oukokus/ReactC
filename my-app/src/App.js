@@ -1,10 +1,9 @@
 import "./App.css";
-import { useState, useEffect, useRef } from "react";
-import { Link, Route, Routes, Outlet } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import Axios from "axios";
 
 function App() {
-  
   const [categoryList, setCategoryList] = useState([]);
   useEffect(() => {
     Axios.get("http://localhost:3001/api/get/category").then((response) => {
@@ -12,221 +11,233 @@ function App() {
     });
   }, []);
 
-    // 曜日の定義
-    const week = ["日", "月", "火", "水", "木", "金", "土"];
-    // 今日の日付
-    let today = new Date();
-    // 表示用の日付
-    let showDate = new Date(today.getFullYear(), today.getMonth(), 1);
-    // 表示された時
-    window.onload = function () {
-        // カレンダーの表示（引数には表示用の日付を設定）
-        showCalendar(showDate);
-    };
-
-    /**
-     * カレンダーの表示
-     */
-    function showCalendar(date) {
-        // 年
-        let year = date.getFullYear();
-        // 月
-        let month = date.getMonth() + 1;
-        // ヘッダーの年月に表示する文字列
-        let showDateStr = year + "年 " + month + "月";
-        // ヘッダーの年月部分に埋め込み
-        document.querySelector('#year_month_label').innerHTML = showDateStr;
-        // カレンダーテーブルを作成する（HTMLが返却される）
-        let calendarTable = createCalendarTable(year, month);
-        // カレンダー表示部分に埋め込み
-        document.querySelector('#calendar_body').innerHTML = calendarTable;
+ 
+  const openModal = () => {
+    setShow(true)
+  }
+  const [showDate, setShowDate] = useState(new Date());
 
 
-        //商品注文顧客管理リスト
-     
-        let getTrList = document.querySelectorAll(".trList")
-        let getTableList = document.querySelector('#tableList')
-        let getListTime = document.querySelectorAll('.listTime')
-   
-        //空の行を削除
-        for (let i = 0; i < getTrList.length; i++) {
-            if (getTrList[i].childNodes.item(1).innerText == "") {
-                getTrList[i].remove()
-            }
-        }
+  const prev_month = () => {
+    setShowDate((prevDate) => {
+      return new Date(prevDate.getFullYear(), prevDate.getMonth() - 1, 1);
+    });
+  };
 
-        //カレンダーに表示
-        let time = document.querySelectorAll(".time")
-        let name = document.querySelectorAll(".name")
-        let day = document.querySelectorAll(".with_date")
-        for (let i = 0; i < time.length; i++) {
-            let month1 = time[i].innerHTML.slice(0, 7)
-            let month2 = year + "-" + ("0" + (month))
-            let days = time[i].innerHTML.slice(-2) - 1
-            if (month1 == month2)
-                day[days].insertAdjacentHTML("beforeend", "<br>" + "<button onclick={btnClick(" + [i] + ")}  id='" + [i] + "' class='clBtn'>" + name[i].innerText + "</button>")
-        }
-    }
+  const next_month = () => {
+    setShowDate((prevDate) => {
+      return new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 1);
+    });
+  };
 
-    //ポップアップの表示
-    let tbodyTr = document.querySelectorAll(".tbodyTr")
-    let time = document.querySelectorAll(".time")
-    let modal = document.getElementById('modal')
-    function btnClick(btn) {
-        for (let i = 0; i < tbodyTr.length; i++) {
-            time[i].style.display = 'none';
-            modal.style.display = 'block';
-            tbodyTr[i].style.display = 'none';
-            tbodyTr[btn].style.display = 'table-row'
-        }
-    }
-    //document.getElementById('modal').addEventListener('click', function () {
-    //    this.style.display = 'none';
-    //});
-  /**
-   * カレンダーテーブルの作成
-   */
-  function createCalendarTable(year, month) {
-    // HTML用の変数
+  const createCalendarTable = (year, month) => {
     let _html = "";
-    // tableタグ
+    const week = ["日", "月", "火", "水", "木", "金", "土"];
+    let countDay = 0;
+    let monthOfEndDay = new Date(year, month, 0).getDate();
+
     _html += '<table class="calendar_tbl">';
-    // テーブルのヘッダー（曜日）
     _html += "<tr>";
     for (let i = 0; i < week.length; i++) {
       _html += "<th>" + week[i] + "</th>";
     }
     _html += "</tr>";
-    // 表示するカレンダー年月の1日の曜日を取得
+
     let startDayOfWeek = new Date(year, month - 1, 1).getDay();
-    // 日付
-    let countDay = 0;
-    // 月の末日
-    let monthOfEndDay = new Date(year, month, 0).getDate();
-    // 6行分繰り返し
     for (let i = 0; i < 6; i++) {
       _html += "<tr>";
-      // 7列（曜日の数）分繰り返し
       for (let j = 0; j < week.length; j++) {
-        // １行目で開始曜日と同じ場合
-        if (i == 0 && j == startDayOfWeek) {
-          // 日付+1
+        if (i === 0 && j === startDayOfWeek) {
           countDay++;
-          // tdタグ（日付有りが分かるようにクラス属性に"with_date"を設定）
           _html += '<td class="with_date">' + countDay + "</td>";
-        }
-        // 日付が0以外で、日付が末日より小さい場合
-        else if (countDay != 0 && countDay < monthOfEndDay) {
-          // 日付+1
+        } else if (countDay !== 0 && countDay < monthOfEndDay) {
           countDay++;
-          // tdタグ（日付有りが分かるようにクラス属性に"with_date"を設定）
           _html += '<td class="with_date">' + countDay + "</td>";
         } else {
-          // tdタグ（日付無しが分かるようにクラス属性に"no_date"を設定）
           _html += '<td class="no_date"></td>';
         }
       }
       _html += "</tr>";
     }
+
     _html += "</table>";
-    // 組み立てたHTMLを返却
     return _html;
+  };
+
+  const renderCategoryList = () => {
+    return (
+      <table id="tableList">
+        <thead>
+          <tr>
+            <th>注文者名</th>
+            <th>注文者電話</th>
+            <th>注文者住所</th>
+            <th>注文商品</th>
+            <th>注文日付</th>
+            <th>個数</th>
+            <th>価格</th>
+          </tr>
+        </thead>
+        <tbody class="tbodyTr">
+          {categoryList.map((category, index) => (
+            <tr key={index}>
+              <td className="name">{category.注文者名}</td>
+              <td>{category.注文者電話}</td>
+              <td>{category.注文者住所}</td>
+              <td>{category.注文商品}</td>
+              <td className="time">{category.注文日付}</td>
+              <td>{category.個数}</td>
+              <td>{category.価格}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      
+    );
+  };
+
+
+
+  let tbodyTr = document.querySelectorAll(".tbodyTr")
+  let time = document.querySelectorAll(".time")
+  let modal = document.getElementById('modal')
+  console.log(tbodyTr)
+  console.log(time)
+  console.log(modal)
+  const handleBtnClick = (btn) => {
+    for (let i = 0; i < tbodyTr.length; i++) {
+      time[i].style.display = 'none';
+      modal.style.display = 'block';
+      tbodyTr[i].style.display = 'none';
+      tbodyTr[btn].style.display = 'table-row'
+    }
   }
 
-  function prev_month() {
-    showDate.setMonth(showDate.getMonth() - 1);
+
+  useEffect(() => {
     showCalendar(showDate);
-  }
-  function now_month() {
-    showDate = new Date();
-    showCalendar(showDate);
-  }
-  function next_month() {
-    showDate.setMonth(showDate.getMonth() + 1);
-    showCalendar(showDate);
-  }
+  }, [showDate, categoryList]);
+  
+  const showCalendar = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const showDateStr = year + "年 " + month + "月";
+    document.querySelector("#year_month_label").innerHTML = showDateStr;
+    const calendarTable = createCalendarTable(year, month);
+    document.querySelector("#calendar_body").innerHTML = calendarTable;
 
-  return (
-    <div class="calendar_area">
-    <div class="calendar_header">
-        <p id="year_month_label"></p>
-        <button id="prev_month_btn" onClick={prev_month}><i class="fas fa-angle-left"></i></button>
-        <button id="next_month_btn" onClick={next_month}><i class="fas fa-angle-right"></i></button>
-    </div>
-    <div id="calendar_body"></div>
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <table class="table">
-                <thead id="reviewArea">
-                    <tr class="trClass">
-                        <th>注文者名</th>
-                        <th>注文者電話</th>
-                        <th>注文者住所</th>
-                        <th>注文商品</th>
-                        <th>個数</th>
-                        <th>価格</th>
-                    </tr>
-                </thead>
-                <tbody id="tbodyId">
-            {categoryList.map((val) => {
-              return (
-                <tr class="trList"key={val.注文No} >
-                <td>{val.注文者名}</td>
-                <td>{val.注文者電話}</td>
-                <td>{val.注文者住所}</td>
-                <td>{val.注文商品}</td>
-                <td>{val.注文日付}</td>
-                <td>{val.個数}</td>
-                <td>{val.価格}</td>
-              </tr>
-            );
-          })}
-          </tbody>
-            </table>
-        </div>
-    </div>
+    let time = document.querySelectorAll(".time");
+    let name = document.querySelectorAll(".name");
+    let day = document.querySelectorAll(".with_date");
+    for (let i = 0; i < name.length / 2; i++) {
+      let month1 = time[i].innerHTML.slice(0, 7);
+      let month2 = year + "-" + ("0" + month).slice(-2);
+      let days = time[i].innerHTML.slice(-2) - 1;
+      if (month1 === month2) {
+        day[days].insertAdjacentHTML(
+          "beforeend",
+          `<br><button onclick="${openModal}" id="${i}" class="clBtn"'>${name[i].innerText}</button>`
+      );
+        //    `<br><button onclick="handleBtnClick(${i})" id="${i}" class="clBtn">${name[i].innerText}</button>`
+      }
+    }
+  };
 
+  const [show, setShow] = useState(false)
+  
+  function Modal({show, setShow}) {
+    
+    const closeModal = () => {
+      setShow(false)
+    }
+    if (show) {
 
-
-
-
-
-      <div id="list">
-        <h2>商品注文顧客管理リスト</h2>
-        <button id="addBtn">
-          <Link to="/Infoadd">情報追加</Link>
-        </button>
-        <table id="tableList">
-          <thead>
-            <tr>
+      return (
+        <div id="overlay" onClick={closeModal}>
+          <div id="content">
+        
+        <table class="table">
+          <thead id="reviewArea">
+            <tr class="trClass">
               <th>注文者名</th>
               <th>注文者電話</th>
               <th>注文者住所</th>
               <th>注文商品</th>
-              <th>注文日付</th>
               <th>個数</th>
               <th>価格</th>
             </tr>
           </thead>
-          <tbody id="tbodyList">
-            {categoryList.map((val) => {
-              return (
-                <tr class="trList"key={val.注文No} >
-                  <td>{val.注文者名}</td>
-                  <td>{val.注文者電話}</td>
-                  <td>{val.注文者住所}</td>
-                  <td>{val.注文商品}</td>
-                  <td>{val.注文日付}</td>
-                  <td>{val.個数}</td>
-                  <td>{val.価格}</td>
-                </tr>
-              );
-            })}
+          <tbody id="tbodymodal">
+                {categoryList.map((category, index) => (
+                index === 2 && (
+              <tr key={index}>
+                <td className="name">{category.注文者名}</td>
+                <td>{category.注文者電話}</td>
+                <td>{category.注文者住所}</td>
+                <td>{category.注文商品}</td>
+                <td>{category.個数}</td>
+                <td>{category.価格}</td>
+                    </tr>
+                     )
+            ))}
           </tbody>
         </table>
+        </div>
+      </div >
+    )
+  } else {
+    return null;
+  }
+}
+    
+
+  
+
+        
+
+  
+  return (
+    <div className="calendar_area">
+      <div className="calendar_header">
+        <p id="year_month_label">{`${showDate.getFullYear()}年 ${
+          showDate.getMonth() + 1
+        }月`}</p>
+        <button id="prev_month_btn" onClick={prev_month}>
+          <i className="fas fa-angle-left"></i>
+        </button>
+        <button id="next_month_btn" onClick={next_month}>
+          <i className="fas fa-angle-right"></i>
+        </button>
+      </div>
+      <div id="calendar_body"></div>
+      <div id="modal" class="modal">
+
+      {renderCategoryList()}
+        
+
+      </div>
+
+
+      <div>
+        <button onClick={openModal}>Click</button>
+        <Modal show={show} setShow={setShow} />
+      </div>
+      
+
+      <div id="list">
+        
+        <h2>商品注文顧客管理リスト</h2>
+        
+        <button id="addBtn">
+          <Link to="/Infoadd">情報追加</Link>
+        </button>
+        {renderCategoryList()}
       </div>
     </div>
   );
 }
 
 export default App;
+
+
+

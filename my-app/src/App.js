@@ -74,7 +74,7 @@ function App() {
             const days = parseInt(category.注文日付.slice(-2));
             if (month1 === month2 && days === countDay) {
               return (
-                <p class="pclass">
+                <p class="pbtn">
                 <button
                   key={index}
                   onClick={() => openModal(index)}

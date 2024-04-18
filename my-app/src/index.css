@@ -36,6 +36,16 @@ button#next_month_btn,
 button#next_year_btn {
   width: 3em;
   height: 2em;
+ 
+}
+
+#prev_month_btn{
+margin-right: 3px;
+}
+
+#next_month_btn{
+margin-left: 3px;
+
 }
 
 /* カレンダーテーブル */

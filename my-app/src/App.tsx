@@ -5,7 +5,7 @@ import Axios, { AxiosResponse, AxiosError } from "axios";
 
 interface Category {
   注文者名: string;
-  注文者電話: string;
+  注文者電話: number;
   注文者住所: string;
   注文商品: string;
   注文日付: string;
@@ -24,15 +24,15 @@ function App() {
 
   useEffect(() => {
     Axios.get<Category[]>("http://localhost:3001/api/get/category")
-      .then((response: AxiosResponse<Category[]>) => {
-        setCategoryList(response.data);
-        setLoading(false);
-      })
-      .catch((error: AxiosError) => {
-        setLoading(false);
-        setError("データの取得中にエラーが発生しました。");
-        console.error("データの取得中にエラーが発生しました。", error);
-      });
+    .then((response: AxiosResponse<Category[]>) => {
+      setCategoryList(response.data);
+      setLoading(false);
+    })
+    .catch((error: AxiosError) => {
+      setLoading(false);
+      setError("データの取得中にエラーが発生しました。");
+      console.error("データの取得中にエラーが発生しました。", error);
+    });
   }, []);
 
 

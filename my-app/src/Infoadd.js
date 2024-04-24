@@ -1,4 +1,5 @@
 "use strict";
+import axios from "axios";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -52,8 +53,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = __importDefault(require("react"));
 var react_hook_form_1 = require("react-hook-form");
-var axios_1 = __importDefault(require("axios"));
-var Infoadd = function () {
+
+const Infoadd: React.FC = () => {
     var _a, _b, _c, _d, _e, _f, _g;
     var _h = (0, react_hook_form_1.useForm)({
         criteriaMode: "all"
@@ -67,7 +68,7 @@ var Infoadd = function () {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, axios_1.default.post("/api/info", data)];
+                    return [4 /*yield*/, axios.default.post("/api/info", data)];
                 case 2:
                     response = _a.sent();
                     console.log("Response data:", response.data);
@@ -167,4 +168,4 @@ var Infoadd = function () {
             react_1.default.createElement("p", { className: "pclass" },
                 react_1.default.createElement("button", { type: "submit", id: "submit-button" }, "\u9001\u4FE1")))));
 };
-exports.default = Infoadd;
+export default Infoadd;

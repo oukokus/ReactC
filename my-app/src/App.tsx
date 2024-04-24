@@ -1,30 +1,55 @@
-import React from "react";
-
+import React, { useState, useEffect , Fragment } from "react";
 import "./App.css";
-import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import Axios from "axios";
+import Axios, { AxiosResponse, AxiosError } from "axios";
+
+interface Category {
+  注文者名: string;
+  注文者電話: string;
+  注文者住所: string;
+  注文商品: string;
+  注文日付: string;
+  個数: number;
+  価格: number;
+}
 
 function App() {
-  const [categoryList, setCategoryList] = useState([]);
+  const [categoryList, setCategoryList] = useState<Category[]>([]);
+  const [modalContent, setModalContent] = useState<Category | null>(null);
+  const [show, setShow] = useState<boolean>(false);
+  const [year, setYear] = useState<number>(new Date().getFullYear());
+  const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    Axios.get("http://localhost:3001/api/get/category").then((response) => {
-      setCategoryList(response.data);
-    });
+    Axios.get<Category[]>("http://localhost:3001/api/get/category")
+      .then((response: AxiosResponse<Category[]>) => {
+        setCategoryList(response.data);
+        setLoading(false);
+      })
+      .catch((error: AxiosError) => {
+        setLoading(false);
+        setError("データの取得中にエラーが発生しました。");
+        console.error("データの取得中にエラーが発生しました。", error);
+      });
   }, []);
-  const [modalContent, setModalContent] = useState(null);
-  const openModal = (index) => {
+
+
+  if (loading) {
+    return <div>データを読み込んでいます...</div>;
+  }
+
+  if (error) {
+    return <div>エラーが発生しました: {error}</div>;
+  }
+  
+
+  const openModal = (index: number) => {
     setShow(true);
-    // ボタンのインデックス番号をコンソールに表示
-    console.log(index);
     setModalContent(categoryList[index]);
   };
 
-  // year と month の状態を初期化
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
-
-  // 前の月を表示する関数
   const prevMonth = () => {
     if (month === 1) {
       setYear(year - 1);
@@ -34,7 +59,6 @@ function App() {
     }
   };
 
-  // 次の月を表示する関数
   const nextMonth = () => {
     if (month === 12) {
       setYear(year + 1);
@@ -43,18 +67,14 @@ function App() {
       setMonth(month + 1);
     }
   };
+
   const createCalendarTable = () => {
     const week = ["日", "月", "火", "水", "木", "金", "土"];
-    let countDay = 0;
+    let countDay: number = 0;
     let monthOfEndDay = new Date(year, month, 0).getDate();
     let tableRows = [];
-    const withDateClassName = "with_date"; // className="with_date"の値を変数に格納
+    const withDateClassName = "with_date";
 
-    // ヘッダー行を作成
-    let headerCells = week.map((day, index) => <th key={index}>{day}</th>);
-    tableRows.push(<tr key="header">{headerCells}</tr>);
-
-    // カレンダーの日付部分を作成
     let startDayOfWeek = new Date(year, month - 1, 1).getDay();
     for (let i = 0; i < 6; i++) {
       let cells = [];
@@ -74,16 +94,15 @@ function App() {
             const days = parseInt(category.注文日付.slice(-2));
             if (month1 === month2 && days === countDay) {
               return (
-                <p class="pbtn">
-                <button
-                  key={index}
-                  onClick={() => openModal(index)}
-                  className="clBtn"
-                  id={index}
-                >
-                  {category.注文者名}
+                <p className="pbtn" key={index}>
+                  <button
+                    onClick={() => openModal(index)}
+                    className="clBtn"
+                    id={index.toString()}
+                  >
+                    {category.注文者名}
                   </button>
-                  </p>
+                </p>
               );
             } else {
               return null;
@@ -119,7 +138,7 @@ function App() {
             <th>価格</th>
           </tr>
         </thead>
-        <tbody class="tbodyTr">
+        <tbody className="tbodyTr">
           {categoryList.map((category, index) => (
             <tr key={index}>
               <td className="name">{category.注文者名}</td>
@@ -136,51 +155,51 @@ function App() {
     );
   };
 
-  const [show, setShow] = useState(false);
-  function Modal({ show, setShow }) {
-    const closeModal = () => {
-      setShow(false);
-    };
-    if (show) {
-      return (
-        <div id="overlay" onClick={closeModal}>
-          <div id="content">
-            <table class="table">
-              <thead id="reviewArea">
-                <tr class="trClass">
-                  <th>注文者名</th>
-                  <th>注文者電話</th>
-                  <th>注文者住所</th>
-                  <th>注文商品</th>
-                  <th>個数</th>
-                  <th>価格</th>
-                </tr>
-              </thead>
-              <tbody id="tbodymodal">
-                {modalContent && (
-                  <tr>
-                    <td className="name">{modalContent.注文者名}</td>
-                    <td>{modalContent.注文者電話}</td>
-                    <td>{modalContent.注文者住所}</td>
-                    <td>{modalContent.注文商品}</td>
-                    <td>{modalContent.個数}</td>
-                    <td>{modalContent.価格}</td>
+  const Modal: React.FC<{ show: boolean; setShow: React.Dispatch<boolean> }> =
+    ({ show, setShow }) => {
+      const closeModal = () => {
+        setShow(false);
+      };
+      if (show) {
+        return (
+          <div id="overlay" onClick={closeModal}>
+            <div id="content">
+              <table className="table">
+                <thead id="reviewArea">
+                  <tr className="trClass">
+                    <th>注文者名</th>
+                    <th>注文者電話</th>
+                    <th>注文者住所</th>
+                    <th>注文商品</th>
+                    <th>個数</th>
+                    <th>価格</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody id="tbodymodal">
+                  {modalContent && (
+                    <tr>
+                      <td className="name">{modalContent.注文者名}</td>
+                      <td>{modalContent.注文者電話}</td>
+                      <td>{modalContent.注文者住所}</td>
+                      <td>{modalContent.注文商品}</td>
+                      <td>{modalContent.個数}</td>
+                      <td>{modalContent.価格}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      );
-    } else {
-      return null;
-    }
-  }
+        );
+      } else {
+        return null;
+      }
+    };
 
   return (
     <div className="calendar_area">
       <div className="calendar_header">
-        <p id="year_month_label"> {`${year}年${month}月`}</p>
+        <p id="year_month_label">{`${year}年${month}月`}</p>
         <button onClick={prevMonth} id="prev_month_btn">
           <i className="fas fa-angle-left"></i>
         </button>
@@ -193,7 +212,7 @@ function App() {
           <tbody>{createCalendarTable()}</tbody>
         </table>
       </div>
-      <div id="modal" class="modal">
+      <div id="modal" className="modal">
         {renderCategoryList()}
       </div>
       <div>
